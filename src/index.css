@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Clash+Grotesk:wght@400;600&display=swap');
+@import "tailwindcss";
+
+*{
+    font-family: "Clash Grotesk", sans-serif;
+}
+
+::-webkit-scrollbar{
+    display: none;
+}

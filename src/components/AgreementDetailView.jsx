@@ -21,9 +21,15 @@ import {
   Tooltip,
   Dialog,
   DialogContent,
+  ListItemIcon,
+  Paper,
+  ListItemSecondaryAction,
 } from "@mui/material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import ImageIcon from "@mui/icons-material/Image";
+import {
+  Image as ImageIcon,
+  Visibility as VisibilityIcon
+} from '@mui/icons-material'
 
 const darkTheme = createTheme({
   palette: {
@@ -40,6 +46,9 @@ const darkTheme = createTheme({
 
 export default function AgreementDetailView({ agreement, onClose }) {
   if (!agreement) return null;
+
+  const agreementdata = agreement.attachments || [];
+  const attachments = agreementdata.map(url => ({ url, type: 'payer' }));
 
   const timelineItems = [
     { status: "Agreement Sent", date: "24 Apr 2024", color: "primary" },
@@ -173,7 +182,8 @@ export default function AgreementDetailView({ agreement, onClose }) {
                   variant="outlined"
                 />
               </Grid>
-              <Grid item size={{ xs: 12 }}>
+              
+              {/* <Grid item size={{ xs: 12 }}>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>
                   Attachments
                 </Typography>
@@ -232,7 +242,6 @@ export default function AgreementDetailView({ agreement, onClose }) {
                   )}
                 </Box>
 
-                {/* Image Preview Dialog */}
                 <Dialog
                   open={openImageModal}
                   onClose={() => setOpenImageModal(false)}
@@ -263,6 +272,45 @@ export default function AgreementDetailView({ agreement, onClose }) {
                     />
                   </DialogContent>
                 </Dialog>
+              </Grid> */}
+
+              <Grid item size={{ xs: 12, md: 6 }}>
+                 <Typography variant="h6" gutterBottom color="primary">
+                    Attachments
+                  </Typography> 
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  { attachments.length > 0 ? (
+                    <List dense>
+                      {attachments.map((file, index) => (
+                        <ListItem key={index} divider>
+                          <ListItemIcon>
+                            {file?.url?.includes('.pdf') ? (
+                              <PdfIcon color="error" />
+                            ) : (
+                              <ImageIcon color="primary" />
+                            )}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={`Evidence ${index + 1}`}
+                          />
+                          <ListItemSecondaryAction>
+                            <IconButton
+                              edge="end"
+                              aria-label="view"
+                              onClick={() => window.open(file.url, '_blank')}
+                            >
+                              <VisibilityIcon />
+                            </IconButton>
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                      ))}
+                    </List>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No files uploaded
+                    </Typography>
+                  )}
+                </Paper>
               </Grid>
 
               <Grid item size={{ xs: 4, md: 4 }}>

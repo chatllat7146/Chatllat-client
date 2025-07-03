@@ -1,5 +1,7 @@
 import { DataGrid } from "@mui/x-data-grid";
 import { Box, Button, Chip } from "@mui/material";
+import React from "react";
+import { formatDate } from "../lib/utils";
 
 
 function DisputesTable({ disputes = [], onViewDetails, onSubmitProof, currentWalletAddress }) {
@@ -8,7 +10,7 @@ function DisputesTable({ disputes = [], onViewDetails, onSubmitProof, currentWal
     switch (status) {
       case 'Resolved':
         return 'success';
-      case 'InProcess':
+      case 'In Process':
         return 'warning';
       case 'DisputeRaised':
         return 'info';
@@ -63,9 +65,9 @@ function DisputesTable({ disputes = [], onViewDetails, onSubmitProof, currentWal
         // Determine the status based on conditions
         let displayStatus;
         if (status === "DisputeRaised") {
-          displayStatus = isEvidenceUploaded ? "Awaiting Response" : "DisputeRaised";
+          displayStatus = isEvidenceUploaded ? "Awaiting Response" : "Dispute Raised";
         } else if (status === "InProcess") {
-          displayStatus = "InProcess";
+          displayStatus = "In Process";
         } else if (status === "Resolved") {
           displayStatus = "Resolved";
         }
@@ -75,6 +77,7 @@ function DisputesTable({ disputes = [], onViewDetails, onSubmitProof, currentWal
             label={displayStatus}
             color={getStatusColor(displayStatus)}
             size="small"
+            variant="outlined"
           />
         );
       }
@@ -105,39 +108,8 @@ function DisputesTable({ disputes = [], onViewDetails, onSubmitProof, currentWal
       field: 'createdAt',
       headerName: 'Raised On',
       width: 150,
+      renderCell: (params) => formatDate(params.value),
     },
-    // {
-    //   field: 'actions',
-    //   headerName: 'Actions',
-    //   width: 300,
-    //   sortable: false,
-    //   filterable: false,
-    //   disableColumnMenu: true,
-    //   renderCell: (params) => (
-    //     <Box sx={{ display: 'flex', gap: 1 }}>
-    //       <Button
-    //         variant="contained"
-    //         color="primary"
-    //         size="small"
-    //         sx={{ outline: 'none', boxShadow: 'none' }}
-    //         onClick={() => onViewDetails && onViewDetails(params.row)}
-    //       >
-    //         View Details
-    //       </Button>
-    //       {params.row.status !== 'Resolved' && (
-    //         <Button
-    //           variant="outlined"
-    //           color="secondary"
-    //           size="small"
-    //           sx={{ outline: 'none', boxShadow: 'none' }}
-    //           onClick={() => onSubmitProof && onSubmitProof(params.row)}
-    //         >
-    //           Submit Proof
-    //         </Button>
-    //       )}
-    //     </Box>
-    //   ),
-    // },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -157,50 +129,32 @@ function DisputesTable({ disputes = [], onViewDetails, onSubmitProof, currentWal
         }
 
         return (
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Button
               variant="contained"
               color="primary"
               size="small"
-              sx={{ outline: 'none', boxShadow: 'none' }}
+              sx={{ outline: 'none', boxShadow: 'none', textTransform: 'capitalize' }}
               onClick={() => onViewDetails && onViewDetails(params.row)}
             >
               View Details
             </Button>
 
-            {(() => {
-              const status = params.row.status;
-              const evidence = params.row.evidence;
-              const type = currentWalletAddress === params.row.payerWalletAddress ? "Payer" : "Receiver";
-
-              let isEvidenceUploaded = true;
-              if (type === "Payer" && evidence.payerEvidence.length === 0) {
-                isEvidenceUploaded = false;
-              } else if (type === "Receiver" && evidence.receiverEvidence.length === 0) {
-                isEvidenceUploaded = false;
-              }
-
-              return (
-                status === "DisputeRaised" &&
-                isEvidenceUploaded
-              );
-            })() && (
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  size="small"
-                  sx={{ outline: 'none', boxShadow: 'none' }}
-                  onClick={() => onSubmitProof && onSubmitProof(params.row)}
-                >
-                  Respond To Dispute
-                </Button>
-              )}
-
+            {params.row.status !== 'Resolved' && !isEvidenceUploaded && (
+              <Button
+                variant="outlined"
+                color="secondary"
+                size="small"
+                sx={{ outline: 'none', boxShadow: 'none' }}
+                onClick={() => onSubmitProof && onSubmitProof(params.row)}
+              >
+                Respond To Dispute
+              </Button>
+            )}
           </Box>
         );
       },
     }
-
   ];
 
   return (
@@ -220,6 +174,8 @@ function DisputesTable({ disputes = [], onViewDetails, onSubmitProof, currentWal
           "& .MuiDataGrid-cell": {
             color: "#fff",
             outline: "none",
+            display: "flex",
+            alignItems: "center"
           },
         }}
       />

@@ -91,58 +91,10 @@ export default function DisputesTabPanel({ currentWalletAddress }) {
     // TODO: Implement actual proof submission logic
   };
 
-  const handleRespondToDispute = async (dispute) => {
-    const agreementId = dispute?.agreementId;
-
-    if (!agreementId) {
-      console.warn("Agreement ID not found in dispute:", dispute);
-      return;
-    }
-
-    try {
-      // Fetch full dispute details using API
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/dispute/details?agreementId=${agreementId}`
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${response.statusText}\n${errorText}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success && result.data?.dispute) {
-        const data = result.data.dispute;
-
-        const formattedDispute = {
-          disputeId: data.disputeId,
-          agreementId: data.agreementId,
-          projectTitle: data.projectTitle,
-          disputeCategory: data.disputeCategory,
-          raisedOn: data.createdAt,
-          status: data.status === "DisputeRaised" ? "Awaiting Response" : data.status,
-          payerReasons: data.reasons?.payerReason,
-          receiverReason: data.reasons?.receiverReason,
-          evidence: data.evidence,
-          attachedEvidence: [
-            ...(data.evidence?.payerEvidence || []),
-            ...(data.evidence?.receiverEvidence || [])
-          ],
-          disputeCreator: data.disputeCreator
-        };
-
-        setSelectedDispute(formattedDispute);
-        setResponseModalOpen(true);
-      } else {
-        throw new Error("No dispute data returned");
-      }
-    } catch (err) {
-      console.error("❌ Error loading dispute details for response modal:", err);
-      alert("Failed to load dispute details. Please try again.");
-    }
+  const handleRespondToDispute = (dispute) => {
+    setSelectedDispute(dispute);
+    setResponseModalOpen(true);
   };
-
 
   const handleCloseDetailView = () => {
     setDetailViewOpen(false);
@@ -227,20 +179,18 @@ export default function DisputesTabPanel({ currentWalletAddress }) {
               );
 
               const result = await response.json();
-              console.log("✅ Response submitted:", result);
+              if (!result.success) throw new Error(result.message);
 
-              if (!result.success) throw new Error(result.message || "Unknown error");
-
-              // refresh disputes list
+              alert("✅ Dispute response submitted successfully.");
               setResponseModalOpen(false);
-              alert("Response submitted successfully");
             } catch (err) {
-              console.error("❌ Error submitting response:", err);
-              alert("Failed to submit dispute response.");
+              console.error("❌ Error submitting dispute response:", err);
+              alert("Failed to submit your response.");
             }
           }}
         />
       )}
+
     </Box>
   );
 }

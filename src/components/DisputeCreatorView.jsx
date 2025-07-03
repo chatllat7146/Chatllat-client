@@ -14,7 +14,9 @@ import {
   ListItemIcon,
   ListItemText,
   ListItemSecondaryAction,
-  Skeleton
+  Skeleton,
+  Fade,
+  Grow
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -67,7 +69,7 @@ const DisputeCreatorView = ({
         getPayerEvidence(),
         getReceiverEvidence()
       ]);
-      
+
       setPayerReason(payerReasonData);
       setReceiverReason(receiverReasonData);
       setPayerEvidenceList(payerEvidence);
@@ -99,7 +101,7 @@ const DisputeCreatorView = ({
     try {
       const dispute = await getDisputeDetails();
       console.log('📝 Debug - Getting payer reason, full dispute:', dispute);
-      
+
       if (!dispute?.reasons) {
         console.log('📝 Debug - No reasons found');
         return 'No reason provided by payer';
@@ -120,7 +122,7 @@ const DisputeCreatorView = ({
     try {
       const dispute = await getDisputeDetails();
       console.log('📝 Debug - Getting receiver reason, full dispute:', dispute);
-      
+
       if (!dispute?.reasons) {
         console.log('📝 Debug - No reasons found');
         return 'No response provided by receiver';
@@ -198,6 +200,7 @@ const DisputeCreatorView = ({
     <Modal
       open={open}
       onClose={onClose}
+      closeAfterTransition
       aria-labelledby="dispute-view-title"
       sx={{
         display: 'flex',
@@ -207,245 +210,247 @@ const DisputeCreatorView = ({
         border: '1px solid #4B515A'
       }}
     >
-      <Paper
-        elevation={24}
-        sx={{
-          width: '100%',
-          maxWidth: 800,
-          maxHeight: '90vh',
-          overflow: 'auto',
-          borderRadius: 2,
-          border: '1px solid #4B515A',
-          background: '#0E1218'
-        }}
-      >
-        {/* Header */}
-        <Box
+      <Grow in={open} timeout={300} >
+        <Paper
+          elevation={24}
           sx={{
-            p: 3,
-            borderBottom: 2,
-            borderColor: 'divider',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            background: '#0E1218',
-            color: 'white',
+            width: '100%',
+            maxWidth: 800,
+            maxHeight: '90vh',
+            overflow: 'auto',
+            borderRadius: 2,
+            border: '1px solid #4B515A',
+            background: '#0E1218'
           }}
         >
-          <Typography id="dispute-view-title" variant="h5" fontWeight="bold">
-            Dispute Details
-          </Typography>
-          <IconButton
-            onClick={onClose}
-            sx={{ color: 'white' }}
-            aria-label="close"
+          {/* Header */}
+          <Box
+            sx={{
+              p: 3,
+              borderBottom: 2,
+              borderColor: 'divider',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              background: '#0E1218',
+              color: 'white',
+            }}
           >
-            <CloseIcon />
-          </IconButton>
-        </Box>
+            <Typography id="dispute-view-title" variant="h5" fontWeight="bold">
+              Dispute Details
+            </Typography>
+            <IconButton
+              onClick={onClose}
+              sx={{ color: 'white' }}
+              aria-label="close"
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
 
-        {/* Content */}
-        <Box sx={{ p: 3 }}>
-          {/* Alert Messages */}
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-              {error}
-            </Alert>
-          )}
+          {/* Content */}
+          <Box sx={{ p: 3 }}>
+            {/* Alert Messages */}
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+                {error}
+              </Alert>
+            )}
 
-          {/* Dispute Information */}
-          <Grid container spacing={3}>
-            {/* Basic Information */}
-            <Grid item size={{ xs: 12 }}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom color="primary">
-                  Dispute Information
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item size={{ xs: 12, md: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Project Title
-                    </Typography>
-                    <Typography variant="body1" fontWeight="medium">
-                      {disputeData.projectTitle || 'N/A'}
-                    </Typography>
-                  </Grid>
-                  <Grid item size={{ xs: 12, md: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Agreement ID
-                    </Typography>
-                    <Typography variant="body1" fontWeight="medium">
-                      {disputeData.agreementId}
-                    </Typography>
-                  </Grid>
-                  <Grid item size={{ xs: 12, md: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Status
-                    </Typography>
-                    <Chip
-                      label={disputeData.status}
-                      color={getStatusColor(disputeData.status)}
-                      size="small"
-                    />
-                  </Grid>
-                  <Grid item size={{ xs: 12, md: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Category
-                    </Typography>
-                    <Typography variant="body1" fontWeight="medium">
-                      {disputeData.disputeCategory}
-                    </Typography>
-                  </Grid>
-                  <Grid item size={{ xs: 12, md: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Raised On
-                    </Typography>
-                    <Typography variant="body1" fontWeight="medium">
-                      {formatDate(disputeData.createdAt)}
-                    </Typography>
-                  </Grid>
-                  <Grid item size={{ xs: 12, md: 6 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Created By
-                    </Typography>
-                    <Chip
-                      label={creator}
-                      variant="outlined"
-                      size="small"
-                    />
-                  </Grid>
-                </Grid>
-              </Paper>
-            </Grid>
-
-            {/* ✅ UPDATED: Payer's Statement/Reason */}
-            <Grid item size={{ xs: 12 }}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom color="primary">
-                  Payer's Statement
-                </Typography>
-                {loading ? (
-                  <Skeleton variant="text" width="100%" height={60} />
-                ) : (
-                  <Typography variant="body1">
-                    {payerReason}
+            {/* Dispute Information */}
+            <Grid container spacing={3}>
+              {/* Basic Information */}
+              <Grid item size={{ xs: 12 }}>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Typography variant="h6" gutterBottom color="primary">
+                    Dispute Information
                   </Typography>
-                )}
-              </Paper>
-            </Grid>
+                  <Grid container spacing={2}>
+                    <Grid item size={{ xs: 12, md: 6 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Project Title
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {disputeData.projectTitle || 'N/A'}
+                      </Typography>
+                    </Grid>
+                    <Grid item size={{ xs: 12, md: 6 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Agreement ID
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {disputeData.agreementId}
+                      </Typography>
+                    </Grid>
+                    <Grid item size={{ xs: 12, md: 6 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Status
+                      </Typography>
+                      <Chip
+                        label={disputeData.status}
+                        color={getStatusColor(disputeData.status)}
+                        size="small"
+                      />
+                    </Grid>
+                    <Grid item size={{ xs: 12, md: 6 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Category
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {disputeData.disputeCategory}
+                      </Typography>
+                    </Grid>
+                    <Grid item size={{ xs: 12, md: 6 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Raised On
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {formatDate(disputeData.createdAt)}
+                      </Typography>
+                    </Grid>
+                    <Grid item size={{ xs: 12, md: 6 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Created By
+                      </Typography>
+                      <Chip
+                        label={creator}
+                        variant="outlined"
+                        size="small"
+                      />
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </Grid>
 
-            {/* ✅ UPDATED: Receiver's Response */}
-            <Grid item size={{ xs: 12 }}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom color="primary">
-                  Receiver's Statement
-                </Typography>
-                {loading ? (
-                  <Skeleton variant="text" width="100%" height={60} />
-                ) : (
-                  <Typography variant="body1">
-                    {receiverReason}
+              {/* ✅ UPDATED: Payer's Statement/Reason */}
+              <Grid item size={{ xs: 12 }}>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Typography variant="h6" gutterBottom color="primary">
+                    Payer's Statement
                   </Typography>
-                )}
-              </Paper>
-            </Grid>
+                  {loading ? (
+                    <Skeleton variant="text" width="100%" height={60} />
+                  ) : (
+                    <Typography variant="body1">
+                      {payerReason}
+                    </Typography>
+                  )}
+                </Paper>
+              </Grid>
 
-            {/* Payer Evidence Section */}
-            <Grid item size={{ xs: 12, md: 6 }}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom color="primary">
-                  Payer Evidence
-                </Typography>
-                {loading ? (
-                  <Box>
-                    <Skeleton variant="rectangular" width="100%" height={40} sx={{ mb: 1 }} />
-                    <Skeleton variant="rectangular" width="100%" height={40} sx={{ mb: 1 }} />
-                    <Skeleton variant="rectangular" width="100%" height={40} />
-                  </Box>
-                ) : payerEvidenceList.length > 0 ? (
-                  <List dense>
-                    {payerEvidenceList.map((evidence, index) => (
-                      <ListItem key={index} divider>
-                        <ListItemIcon>
-                          {evidence.url.includes('.pdf') ? (
-                            <PdfIcon color="error" />
-                          ) : (
-                            <ImageIcon color="primary" />
-                          )}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={`Evidence ${index + 1}`}
-                          secondary="Uploaded by: Payer"
-                        />
-                        <ListItemSecondaryAction>
-                          <IconButton
-                            edge="end"
-                            aria-label="view"
-                            onClick={() => window.open(evidence.url, '_blank')}
-                          >
-                            <VisibilityIcon />
-                          </IconButton>
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    ))}
-                  </List>
-                ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    No evidence files uploaded by payer.
+              {/* ✅ UPDATED: Receiver's Response */}
+              <Grid item size={{ xs: 12 }}>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Typography variant="h6" gutterBottom color="primary">
+                    Receiver's Statement
                   </Typography>
-                )}
-              </Paper>
-            </Grid>
+                  {loading ? (
+                    <Skeleton variant="text" width="100%" height={60} />
+                  ) : (
+                    <Typography variant="body1">
+                      {receiverReason}
+                    </Typography>
+                  )}
+                </Paper>
+              </Grid>
 
-            {/* Receiver Evidence Section */}
-            <Grid item size={{ xs: 12, md: 6 }}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom color="primary">
-                  Receiver Evidence
-                </Typography>
-                {loading ? (
-                  <Box>
-                    <Skeleton variant="rectangular" width="100%" height={40} sx={{ mb: 1 }} />
-                    <Skeleton variant="rectangular" width="100%" height={40} sx={{ mb: 1 }} />
-                    <Skeleton variant="rectangular" width="100%" height={40} />
-                  </Box>
-                ) : receiverEvidenceList.length > 0 ? (
-                  <List dense>
-                    {receiverEvidenceList.map((evidence, index) => (
-                      <ListItem key={index} divider>
-                        <ListItemIcon>
-                          {evidence.url.includes('.pdf') ? (
-                            <PdfIcon color="error" />
-                          ) : (
-                            <ImageIcon color="primary" />
-                          )}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={`Evidence ${index + 1}`}
-                          secondary="Uploaded by: Receiver"
-                        />
-                        <ListItemSecondaryAction>
-                          <IconButton
-                            edge="end"
-                            aria-label="view"
-                            onClick={() => window.open(evidence.url, '_blank')}
-                          >
-                            <VisibilityIcon />
-                          </IconButton>
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    ))}
-                  </List>
-                ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    No evidence files uploaded by receiver.
+              {/* Payer Evidence Section */}
+              <Grid item size={{ xs: 12, md: 6 }}>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Typography variant="h6" gutterBottom color="primary">
+                    Payer Evidence
                   </Typography>
-                )}
-              </Paper>
+                  {loading ? (
+                    <Box>
+                      <Skeleton variant="rectangular" width="100%" height={40} sx={{ mb: 1 }} />
+                      <Skeleton variant="rectangular" width="100%" height={40} sx={{ mb: 1 }} />
+                      <Skeleton variant="rectangular" width="100%" height={40} />
+                    </Box>
+                  ) : payerEvidenceList.length > 0 ? (
+                    <List dense>
+                      {payerEvidenceList.map((evidence, index) => (
+                        <ListItem key={index} divider>
+                          <ListItemIcon>
+                            {evidence.url.includes('.pdf') ? (
+                              <PdfIcon color="error" />
+                            ) : (
+                              <ImageIcon color="primary" />
+                            )}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={`Evidence ${index + 1}`}
+                            secondary="Uploaded by: Payer"
+                          />
+                          <ListItemSecondaryAction>
+                            <IconButton
+                              edge="end"
+                              aria-label="view"
+                              onClick={() => window.open(evidence.url, '_blank')}
+                            >
+                              <VisibilityIcon />
+                            </IconButton>
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                      ))}
+                    </List>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No evidence files uploaded by payer.
+                    </Typography>
+                  )}
+                </Paper>
+              </Grid>
+
+              {/* Receiver Evidence Section */}
+              <Grid item size={{ xs: 12, md: 6 }}>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Typography variant="h6" gutterBottom color="primary">
+                    Receiver Evidence
+                  </Typography>
+                  {loading ? (
+                    <Box>
+                      <Skeleton variant="rectangular" width="100%" height={40} sx={{ mb: 1 }} />
+                      <Skeleton variant="rectangular" width="100%" height={40} sx={{ mb: 1 }} />
+                      <Skeleton variant="rectangular" width="100%" height={40} />
+                    </Box>
+                  ) : receiverEvidenceList.length > 0 ? (
+                    <List dense>
+                      {receiverEvidenceList.map((evidence, index) => (
+                        <ListItem key={index} divider>
+                          <ListItemIcon>
+                            {evidence.url.includes('.pdf') ? (
+                              <PdfIcon color="error" />
+                            ) : (
+                              <ImageIcon color="primary" />
+                            )}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={`Evidence ${index + 1}`}
+                            secondary="Uploaded by: Receiver"
+                          />
+                          <ListItemSecondaryAction>
+                            <IconButton
+                              edge="end"
+                              aria-label="view"
+                              onClick={() => window.open(evidence.url, '_blank')}
+                            >
+                              <VisibilityIcon />
+                            </IconButton>
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                      ))}
+                    </List>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No evidence files uploaded by receiver.
+                    </Typography>
+                  )}
+                </Paper>
+              </Grid>
             </Grid>
-          </Grid>
-        </Box>
-      </Paper>
+          </Box>
+        </Paper>
+      </Grow>
     </Modal>
   );
 };

@@ -316,20 +316,24 @@ const DisputeResponseModal = ({
     <Modal
       open={open}
       onClose={onClose}
-      sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: 2,
+        border: '1px solid #4B515A'
+      }}
     >
-      <Box
+      <Paper
+        elevation={24}
         sx={{
-          backgroundColor: "#0E1218",
-          color: "#fff",
-          width: "100%",
-          maxWidth: 900,
-          maxHeight: "95vh",
-          overflow: "auto",
+          width: '100%',
+          maxWidth: 800,
+          maxHeight: '90vh',
+          overflow: 'auto',
           borderRadius: 2,
-          outline: "none",
-          border: "1px solid #4B515A",
-          p: 4,
+          border: '1px solid #4B515A',
+          background: '#0E1218'
         }}
       >
         {/* Header */}
@@ -527,7 +531,7 @@ const DisputeResponseModal = ({
             </Typography>
           </Box>
         )}
-      </Box>
+      </Paper>
     </Modal>
   );
 };
